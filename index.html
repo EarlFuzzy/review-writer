@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trevor's Review Writer</title>
+<style>
+  :root{
+    --ink:#1a1410;
+    --paper:#fbf7f0;
+    --card:#ffffff;
+    --sun:#d8541f;       /* desert sunset terracotta */
+    --sun-deep:#b23e10;
+    --sky:#2c6e8f;       /* dusk blue accent */
+    --sage:#6b7d5a;      /* saguaro green */
+    --line:#e7dccb;
+    --muted:#8a7d6b;
+    --gold:#e8a02c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:'Georgia','Times New Roman',serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.5;
+    padding:0 0 60px;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(216,84,31,0.06), transparent 38%),
+      radial-gradient(circle at 88% 92%, rgba(44,110,143,0.06), transparent 40%);
+    min-height:100vh;
+  }
+  .wrap{max-width:620px;margin:0 auto;padding:0 18px}
+
+  /* Header */
+  header{padding:30px 0 18px;text-align:center;position:relative}
+  .eyebrow{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--sun-deep);font-weight:700;margin-bottom:10px;
+  }
+  h1{
+    font-size:33px;line-height:1.05;letter-spacing:-0.02em;font-weight:700;
+  }
+  h1 .accent{color:var(--sun);font-style:italic}
+  .sub{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:13px;color:var(--muted);margin-top:9px;
+  }
+  .rule{height:2px;background:linear-gradient(90deg,var(--sun),var(--gold) 55%,transparent);margin:20px 0 4px;border-radius:2px}
+
+  /* Card */
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:22px 20px;margin-top:22px;
+    box-shadow:0 1px 0 rgba(0,0,0,0.02),0 14px 30px -22px rgba(60,40,20,0.35);
+  }
+
+  label{
+    display:block;font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--ink);margin:0 0 7px;
+  }
+  label .opt{color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;font-size:12px}
+  .field{margin-bottom:20px}
+  input[type=text],textarea{
+    width:100%;font-family:'Georgia',serif;font-size:16px;color:var(--ink);
+    background:var(--paper);border:1px solid var(--line);border-radius:9px;
+    padding:12px 13px;transition:border-color .15s,box-shadow .15s;
+  }
+  input[type=text]:focus,textarea:focus{
+    outline:none;border-color:var(--sun);box-shadow:0 0 0 3px rgba(216,84,31,0.13);
+  }
+  textarea{resize:vertical;min-height:74px;line-height:1.45}
+  select.sel{
+    width:100%;font-family:'Georgia',serif;font-size:16px;color:var(--ink);
+    background:var(--paper);border:1px solid var(--line);border-radius:9px;
+    padding:12px 13px;transition:border-color .15s,box-shadow .15s;
+    -webkit-appearance:none;appearance:none;cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a7d6b' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;
+  }
+  select.sel:focus{outline:none;border-color:var(--sun);box-shadow:0 0 0 3px rgba(216,84,31,0.13)}
+  .hint{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--muted);margin-top:6px}
+
+  /* Location row */
+  .locrow{display:flex;gap:8px}
+  .locrow input{flex:1}
+  .gps{
+    flex:0 0 auto;width:50px;border:1px solid var(--line);background:var(--paper);
+    border-radius:9px;font-size:20px;cursor:pointer;transition:all .12s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .gps:active{transform:scale(.94)}
+  .gps.on{background:#fff4ec;border-color:var(--sun)}
+  .gps.busy{opacity:.5}
+
+  /* Stars */
+  .stars{display:flex;gap:6px}
+  .star{
+    flex:1;cursor:pointer;border:1px solid var(--line);background:var(--paper);
+    border-radius:9px;padding:11px 0;text-align:center;font-size:22px;line-height:1;
+    color:#d8cdbb;transition:all .12s;-webkit-tap-highlight-color:transparent;user-select:none;
+  }
+  .star.lit{color:var(--gold)}
+  .star.chosen{border-color:var(--sun);background:#fff4ec}
+  .starcap{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--muted);margin-top:7px;min-height:15px}
+
+  /* Pills */
+  .pills{display:flex;flex-wrap:wrap;gap:8px}
+  .pill{
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:600;
+    border:1px solid var(--line);background:var(--paper);color:var(--ink);
+    border-radius:30px;padding:8px 15px;cursor:pointer;transition:all .12s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .pill.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .pill.tone.on{background:var(--sky);border-color:var(--sky)}
+  .pill.len.on{background:var(--sun);border-color:var(--sun)}
+
+  /* Generate button */
+  .go{
+    width:100%;font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:700;
+    letter-spacing:.02em;color:#fff;cursor:pointer;border:none;border-radius:11px;
+    padding:16px;margin-top:4px;
+    background:linear-gradient(135deg,var(--sun),var(--sun-deep));
+    box-shadow:0 10px 22px -10px rgba(178,62,16,0.7);transition:transform .1s,box-shadow .2s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .go:active{transform:translateY(1px)}
+  .go:disabled{opacity:.55;cursor:default;box-shadow:none}
+
+  /* Output */
+  .out{margin-top:24px;display:none}
+  .out.show{display:block;animation:rise .4s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .out-card{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    box-shadow:0 14px 30px -22px rgba(60,40,20,0.4);
+  }
+  .out-top{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:14px 18px;background:var(--ink);color:var(--paper);
+  }
+  .out-top .lbl{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--gold)}
+  .out-stars{font-size:15px;color:var(--gold);letter-spacing:2px}
+  .review{padding:20px 19px;font-size:16.5px;line-height:1.6;white-space:pre-wrap}
+  .out-actions{display:flex;flex-wrap:wrap;gap:10px;padding:0 18px 18px}
+  .copy,.find,.again{
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;font-weight:700;cursor:pointer;
+    border-radius:9px;padding:13px;flex:1 1 30%;min-width:96px;border:1px solid var(--line);transition:all .12s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .copy{background:var(--sage);color:#fff;border-color:var(--sage)}
+  .copy.done{background:var(--sky);border-color:var(--sky)}
+  .find{background:var(--sky);color:#fff;border-color:var(--sky)}
+  .again{background:var(--paper);color:var(--ink)}
+  .count{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:var(--muted);text-align:right;padding:0 19px 14px;margin-top:-4px}
+
+  /* Loading */
+  .load{display:none;text-align:center;padding:26px 0 6px}
+  .load.show{display:block}
+  .dots{display:inline-flex;gap:7px}
+  .dots span{width:9px;height:9px;border-radius:50%;background:var(--sun);animation:bounce 1.2s infinite}
+  .dots span:nth-child(2){animation-delay:.18s;background:var(--gold)}
+  .dots span:nth-child(3){animation-delay:.36s;background:var(--sky)}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-9px);opacity:1}}
+  .loadtxt{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;color:var(--muted);margin-top:13px;font-style:italic}
+
+  .err{display:none;background:#fdeee8;border:1px solid #f3c4ad;color:var(--sun-deep);
+    border-radius:10px;padding:13px 15px;margin-top:18px;font-size:14px;
+    font-family:'Helvetica Neue',Arial,sans-serif}
+  .err.show{display:block}
+
+  .foot{text-align:center;font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:var(--muted);margin-top:30px;letter-spacing:.03em}
+
+  @media(max-width:430px){
+    h1{font-size:28px}
+    .review{font-size:16px}
+    .star{font-size:19px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Tucson · 92 Reviews Deep</div>
+    <h1>The <span class="accent">Review</span> Writer</h1>
+    <div class="sub">Your voice. A few facts in, one honest review out.</div>
+    <div class="rule"></div>
+  </header>
+
+  <div class="card" id="form">
+    <div class="field">
+      <label for="biz">Business name</label>
+      <input type="text" id="biz" placeholder="e.g. Milwaukee Brat House" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label for="loc">Location / address <span class="opt">— optional, but key for chains</span></label>
+      <div class="locrow">
+        <input type="text" id="loc" placeholder="e.g. 5901 S Tucson Blvd, by the airport" autocomplete="off">
+        <button type="button" class="gps" id="gps" title="Use my location">📍</button>
+      </div>
+      <div class="hint" id="lochint">Pins down which one you mean when there are 1,000 of them.</div>
+    </div>
+
+    <div class="field">
+      <label>Star rating</label>
+      <div class="stars" id="stars">
+        <div class="star" data-v="1">★</div>
+        <div class="star" data-v="2">★</div>
+        <div class="star" data-v="3">★</div>
+        <div class="star" data-v="4">★</div>
+        <div class="star" data-v="5">★</div>
+      </div>
+      <div class="starcap" id="starcap"></div>
+    </div>
+
+    <div class="field">
+      <label>What kind of place? <span class="opt">— shapes what matters</span></label>
+      <div class="pills" id="cats">
+        <div class="pill" data-cat="Restaurant / food">Restaurant</div>
+        <div class="pill" data-cat="Bar / nightlife">Bar / Nightlife</div>
+        <div class="pill" data-cat="Auto / mechanic">Auto</div>
+        <div class="pill" data-cat="Hotel / travel">Hotel / Travel</div>
+        <div class="pill" data-cat="Local service / shop">Service / Shop</div>
+        <div class="pill" data-cat="Experience / activity">Experience</div>
+        <div class="pill" data-cat="Other">Other</div>
+      </div>
+      <input type="text" id="othercat" placeholder="What kind of business? e.g. tattoo shop, dog groomer, dispensary" autocomplete="off" style="display:none;margin-top:10px">
+    </div>
+
+    <div class="field">
+      <label for="exp1">Memorable experience 1 <span class="opt">— required, this is the magic</span></label>
+      <textarea id="exp1" placeholder="One specific thing that happened — what you ordered, what someone did, a moment that stuck."></textarea>
+    </div>
+
+    <div class="field">
+      <label for="exp2">Memorable experience 2 <span class="opt">— optional, but two beats one</span></label>
+      <textarea id="exp2" placeholder="A second specific moment, if you've got one. More real detail = sounds more like you."></textarea>
+      <div class="hint">Voice-to-text is your friend here.</div>
+    </div>
+
+    <div class="field">
+      <label for="people">The people were… <span class="opt">— pick one</span></label>
+      <select id="people" class="sel">
+        <option value="">Choose one…</option>
+        <option>Friendly</option>
+        <option>Knowledgeable</option>
+        <option>Attentive</option>
+        <option>Patient</option>
+        <option>Honest</option>
+        <option>Welcoming</option>
+        <option>Easygoing</option>
+        <option>Professional</option>
+        <option>Genuine</option>
+        <option>Funny</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="exper">The experience was… <span class="opt">— pick one</span></label>
+      <select id="exper" class="sel">
+        <option value="">Choose one…</option>
+        <option>Smooth</option>
+        <option>Fast</option>
+        <option>Fair-priced</option>
+        <option>Above and beyond</option>
+        <option>Hassle-free</option>
+        <option>Worth every penny</option>
+        <option>Better than expected</option>
+        <option>Top-notch</option>
+        <option>Consistent</option>
+        <option>A great value</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="emp">Employees to shout out <span class="opt">— optional</span></label>
+      <input type="text" id="emp" placeholder="e.g. Kaitlyn at the desk, Barry the guide" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label>Length</label>
+      <div class="pills" id="lens">
+        <div class="pill len on" data-len="quick">Quick Hit</div>
+        <div class="pill len" data-len="mid">Mid</div>
+        <div class="pill len" data-len="full">Full Story</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Tone</label>
+      <div class="pills" id="tones">
+        <div class="pill tone on" data-tone="warm">Warm</div>
+        <div class="pill tone" data-tone="funny">Funny</div>
+        <div class="pill tone" data-tone="matter-of-fact">Matter-of-fact</div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:8px">
+      <label for="closer">Would you go back? <span class="opt">— picks your closing line</span></label>
+      <select id="closer" class="sel">
+        <option value="">Choose one…</option>
+        <option value="definitely">Definitely going back</option>
+        <option value="probably">Probably back again</option>
+        <option value="recommend">Would recommend it</option>
+        <option value="maybe">Maybe, on the fence</option>
+        <option value="no">Won't be back</option>
+      </select>
+    </div>
+
+    <button class="go" id="go">Write my review</button>
+  </div>
+
+  <div class="load" id="load">
+    <div class="dots"><span></span><span></span><span></span></div>
+    <div class="loadtxt" id="loadtxt">Matching your voice…</div>
+  </div>
+
+  <div class="err" id="err"></div>
+
+  <div class="out" id="out">
+    <div class="out-card">
+      <div class="out-top">
+        <span class="lbl">Ready to post</span>
+        <span class="out-stars" id="outstars"></span>
+      </div>
+      <div class="review" id="review"></div>
+      <div class="count" id="count"></div>
+      <div class="out-actions">
+        <button class="copy" id="copy">Copy review</button>
+        <button class="find" id="find">Find on Google</button>
+        <button class="again" id="again">New one</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot" id="foot">Writes like you, never like a bot</div>
+</div>
+
+<script>
+  // ---------- prefill from URL ----------
+  const params = new URLSearchParams(location.search);
+  const setIf = (id,key)=>{ const v=params.get(key); if(v) document.getElementById(id).value=v; };
+  setIf('biz','business'); setIf('emp','employees'); setIf('exp1','notes1'); setIf('exp2','notes2'); setIf('loc','location');
+
+  let rating = 0, cat = '', len = 'quick', tone = 'warm';
+
+  // category prefill
+  if(params.get('type')){
+    document.querySelectorAll('#cats .pill').forEach(p=>{
+      if(p.dataset.cat.toLowerCase().includes(params.get('type').toLowerCase())){ p.classList.add('on'); cat=p.dataset.cat; }
+    });
+  }
+  if(params.get('stars')){ setStars(parseInt(params.get('stars'),10)); }
+
+  // ---------- stars ----------
+  const starEls = [...document.querySelectorAll('.star')];
+  const starCaps = {1:"One star — what went wrong",2:"Two stars — mostly a miss",3:"Three stars — mixed bag, fair and honest",4:"Four stars — strong, with a small ding",5:"Five stars — they earned it"};
+  function paint(n){ starEls.forEach(s=>{ const v=+s.dataset.v; s.classList.toggle('lit',v<=n); s.classList.toggle('chosen',v<=n); }); }
+  function setStars(n){ rating=n; paint(n); document.getElementById('starcap').textContent=starCaps[n]||''; }
+  starEls.forEach(s=>{
+    s.addEventListener('click',()=>setStars(+s.dataset.v));
+    s.addEventListener('mouseenter',()=>paint(+s.dataset.v));
+  });
+  document.getElementById('stars').addEventListener('mouseleave',()=>paint(rating));
+
+  // ---------- GPS auto-fill ----------
+  const gpsBtn=document.getElementById('gps');
+  gpsBtn.addEventListener('click',()=>{
+    const hint=document.getElementById('lochint');
+    if(!navigator.geolocation){ hint.textContent="Location isn't available on this device — just type the address."; return; }
+    gpsBtn.classList.add('busy'); hint.textContent="Finding you…";
+    navigator.geolocation.getCurrentPosition(async pos=>{
+      const {latitude,longitude}=pos.coords;
+      try{
+        const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,{headers:{'Accept':'application/json'}});
+        const d=await r.json();
+        const a=d.address||{};
+        const parts=[
+          (a.house_number&&a.road)?`${a.house_number} ${a.road}`:(a.road||''),
+          a.neighbourhood||a.suburb||'',
+          a.city||a.town||a.village||''
+        ].filter(Boolean);
+        const guess=parts.join(', ') || d.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+        document.getElementById('loc').value=guess;
+        gpsBtn.classList.remove('busy'); gpsBtn.classList.add('on');
+        hint.textContent="Got your area — tighten it to the exact spot if you want.";
+      }catch(e){
+        document.getElementById('loc').value=`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+        gpsBtn.classList.remove('busy'); gpsBtn.classList.add('on');
+        hint.textContent="Grabbed your coordinates — type the address if you'd rather.";
+      }
+    },err=>{
+      gpsBtn.classList.remove('busy');
+      hint.textContent="Couldn't get location (permission denied?) — just type it in.";
+    },{enableHighAccuracy:true,timeout:9000,maximumAge:60000});
+  });
+
+  // ---------- pills ----------
+  document.querySelectorAll('#cats .pill').forEach(p=>p.addEventListener('click',()=>{
+    document.querySelectorAll('#cats .pill').forEach(x=>x.classList.remove('on'));
+    p.classList.add('on'); cat=p.dataset.cat;
+    const oc=document.getElementById('othercat');
+    if(cat==='Other'){ oc.style.display='block'; oc.focus(); } else { oc.style.display='none'; }
+  }));
+  document.querySelectorAll('#lens .pill').forEach(p=>p.addEventListener('click',()=>{
+    document.querySelectorAll('#lens .pill').forEach(x=>x.classList.remove('on'));
+    p.classList.add('on'); len=p.dataset.len;
+  }));
+  document.querySelectorAll('#tones .pill').forEach(p=>p.addEventListener('click',()=>{
+    document.querySelectorAll('#tones .pill').forEach(x=>x.classList.remove('on'));
+    p.classList.add('on'); tone=p.dataset.tone;
+  }));
+
+  // ---------- VOICE PROFILES ----------
+  // Trevor's is the locked default. Friends load their own via a profile.
+  const TREVOR_PROFILE = {
+    name:"Trevor C.",
+    voice:`TREVOR'S VOICE — study and replicate precisely:
+- OPENER: Almost always a single punchy verdict line, then a line break before the story. Examples of his real openers: "Judging Hertz based upon this one location, they killed it!" / "What is not to love about Tucson!" / "It's hard for me to give any car repair place a five star review, but they earned this!" / "Start to finish, an absolutely great and professional experience!" A favorite move: name a skeptic angle, then flip it ("It's hard for me to give X, but they earned it").
+- ARC: setup → the problem or context → how the business handled it → the payoff. He tells a story, never a feature list.
+- CLOSER: zooms out to a recommendation or verdict. Real examples: "If you live near this place, I recommend using it." / "I would stake my reputation on this place, they will not do you wrong!" / "this place is going to be tough to beat!"
+- PHRASES that are genuinely his: "start to finish" / "from start to finish". Casual money: "$50 bucks", "$15 bucks", "three bucks" (never "$50.00"). Light self-deprecation ("who am I to question the guide?", "I sheepishly went in", "so as her man, it was my duty").
+- He credits staff BY NAME, woven in naturally and warmly as part of the story — not bolted on at the end.
+- His 5-stars are about going above and beyond, fairness, honesty, and being treated like a real person rather than a mark. That value system should show through.
+- Warm, real, conversational. Earned enthusiasm and exclamation points — not spammy. Uses em-dashes and the occasional parenthetical aside.
+- Paragraphs separated by blank lines. He scales length to the experience.`,
+    bans:`HARD BANS — these instantly break the voice. NEVER use: nestled, hidden gem, testament, elevate(s), culinary journey, gem of a, foodie, ambiance (he'd say vibe or feel), "look no further", "second to none", "a feast for the senses", "did not disappoint" as a closer crutch, "cozy atmosphere", em-dash-free corporate cadence, or any stiff marketing copy.`,
+    lens:{
+      quick:"LENGTH: Quick Hit — 1 to 2 tight paragraphs, like his BMW of Tucson or Milwaukee Brat House reviews. Punchy, no padding.",
+      mid:"LENGTH: Mid — about 2 to 3 paragraphs. A real but compact story: opener, the meat of what happened, and a verdict. Like his Arizona Auto Spa or Downtown Kitchen reviews.",
+      full:"LENGTH: Full Story — 3 to 6 paragraphs with a real narrative arc, like his Fenton Investment or Firestone reviews."
+    },
+    tones:{
+      warm:"TONE: Warm and genuine — his default. Grateful, human, generous.",
+      funny:"TONE: Lean into his humor and playful asides, but keep it natural — never forced or corny.",
+      "matter-of-fact":"TONE: More straightforward and grounded. Still recognizably him, just less exclamation and flourish."
+    }
+  };
+
+  // Active profile starts as Trevor; a loaded friend profile overrides it.
+  let PROFILE = TREVOR_PROFILE;
+
+  // Load a friend profile from URL (?profile=<base64 JSON>) if present.
+  (function loadProfileFromURL(){
+    const p=params.get('profile');
+    if(!p) return;
+    try{
+      const obj=JSON.parse(decodeURIComponent(escape(atob(p))));
+      if(obj && obj.voice){ PROFILE = normalizeProfile(obj); flagProfile(PROFILE.name); }
+    }catch(e){ /* bad profile, stay on Trevor */ }
+  })();
+
+  function normalizeProfile(obj){
+    return {
+      name: obj.name || "Reviewer",
+      voice: obj.voice || "",
+      bans: obj.bans || `HARD BANS: never use nestled, hidden gem, testament, elevate(s), culinary journey, foodie, "look no further", "second to none", "a feast for the senses", "did not disappoint" as a crutch, or stiff marketing copy.`,
+      lens: obj.lens || {
+        quick:"LENGTH: Quick Hit — 1 to 2 tight paragraphs. Punchy, no padding.",
+        mid:"LENGTH: Mid — about 2 to 3 paragraphs with a clear arc and verdict.",
+        full:"LENGTH: Full Story — 3 to 6 paragraphs with a real narrative arc."
+      },
+      tones: obj.tones || {
+        warm:"TONE: Warm and genuine.",
+        funny:"TONE: Playful and funny, but natural — never forced.",
+        "matter-of-fact":"TONE: Straightforward and grounded."
+      }
+    };
+  }
+
+  function flagProfile(name){
+    document.querySelector('.eyebrow').textContent = name + " · Voice Loaded";
+    document.querySelector('.sub').textContent = "Writing in " + name + "'s voice. A few facts in, one review out.";
+  }
+
+  function buildSystem(){
+    return `You are ghostwriting a Google review in the exact voice of ${PROFILE.name}. Output ONLY the review text — no preamble, no quotation marks, no title, no sign-off, no notes. It must read as if ${PROFILE.name} typed it themselves.
+
+${PROFILE.voice}
+
+${PROFILE.bans}
+Do not invent specific facts, dishes, names, or prices that weren't provided. Work only with what the reviewer gives you, expanded naturally in their voice.
+
+SOUND LIKE A REAL PERSON, NOT AN AI. This is the most important rule. Real reviews are a little messy:
+- Vary sentence length hard. Throw in short fragments. Like this. A real person doesn't write in tidy, even, balanced sentences — that polish is the #1 tell of AI writing.
+- Avoid neat parallel structure and three-part lists ("friendly, fast, and fair"). Break the rhythm.
+- It's fine to start a sentence with And, But, or So. Toss in a casual aside or an "honestly" / "not gonna lie" / "I'll be real" if it fits the voice.
+- Don't over-explain or wrap up too neatly. Real people trail off, jump around, and don't always tie a perfect bow.
+- Skip the corporate-review cadence entirely. No "I recently had the pleasure of," no "Overall," no summary paragraph that restates everything.
+- A tiny bit of imperfection (a dash where a comma might go, an enthusiastic run-on) reads MORE human, not less. Don't sand it down to a press release.
+
+RATING CALIBRATION: Match the emotional register to the star rating. 5 = genuine enthusiasm and a real recommendation. 4 = strong but name the small ding honestly. 3 = fair, balanced, an honest mixed-bag take. 2 = mostly a miss but still even-handed. 1 = what went wrong, direct but not cruel.
+
+GOOGLE: keep it well under 4000 characters.`;
+  }
+
+  function buildUserMsg(){
+    const biz=document.getElementById('biz').value.trim();
+    const loc=document.getElementById('loc').value.trim();
+    const e1=document.getElementById('exp1').value.trim();
+    const e2=document.getElementById('exp2').value.trim();
+    const people=document.getElementById('people').value;
+    const exper=document.getElementById('exper').value;
+    const emp=document.getElementById('emp').value.trim();
+    const closer=document.getElementById('closer').value;
+    const lenInstr = PROFILE.lens[len] || PROFILE.lens.mid;
+    const toneInstr = PROFILE.tones[tone] || PROFILE.tones.warm;
+
+    const closerMap = {
+      definitely:"CLOSING: End by making clear you'll definitely be back — but phrase it fresh and natural, in your own words. Vary it; don't use a stock line.",
+      probably:"CLOSING: End on the idea that you'd probably return — keep it casual and genuine, your own phrasing, not canned.",
+      recommend:"CLOSING: End by recommending it to others — make it sound like a real person vouching, not a tagline.",
+      maybe:"CLOSING: End honestly on the fence — you might go back, might not. Keep it real and a little undecided.",
+      no:"CLOSING: End by making clear you won't be back — direct but not cruel, in your own honest voice."
+    };
+
+    let msg = `Write the review.\n\nBUSINESS: ${biz}\nSTAR RATING: ${rating} of 5\n`;
+    if(loc) msg+=`LOCATION: ${loc} (This identifies the specific branch. Anchor the review to this place naturally — reference the city/area/neighborhood the way the reviewer grounds their reviews. Do NOT paste the full street address into the prose like a robot.)\n`;
+    if(cat){
+      const oc=document.getElementById('othercat').value.trim();
+      const catLabel = (cat==='Other' && oc) ? oc : cat;
+      msg+=`TYPE OF PLACE: ${catLabel}`;
+      if(cat==='Other' && oc) msg+=` (Use what you know about how a ${oc} works — what customers there actually care about — to make the review specific and credible.)`;
+      msg+=`\n`;
+    }
+    let whatHappened = `- ${e1}\n`;
+    if(e2) whatHappened += `- ${e2}\n`;
+    msg+=`\nWHAT HAPPENED (the reviewer's raw notes — build the review around these specific moments, expand naturally in their voice, invent nothing):\n${whatHappened}`;
+    if(people || exper){
+      msg+=`\nVIBE CUES (work these in ONLY if they fit naturally — reword or imply them, never just drop the bare word in):`;
+      if(people) msg+=` the people were ${people.toLowerCase()};`;
+      if(exper) msg+=` the experience felt ${exper.toLowerCase()};`;
+      msg+=`\n`;
+    }
+    if(emp) msg+=`\nSTAFF TO CREDIT (weave in naturally, by name): ${emp}\n`;
+    if(closer) msg+=`\n${closerMap[closer]}\n`;
+    msg+=`\n${lenInstr}\n${toneInstr}`;
+    return msg;
+  }
+
+  // ---------- generate ----------
+  const loadMsgs=["Finding the punchy opener…","Building the story…","Working in the shout-outs…","Killing every cliché…","Matching your voice…"];
+  let lastReview='';
+
+  async function generate(){
+    const biz=document.getElementById('biz').value.trim();
+    const e1=document.getElementById('exp1').value.trim();
+    const people=document.getElementById('people').value;
+    const exper=document.getElementById('exper').value;
+    const closer=document.getElementById('closer').value;
+    const err=document.getElementById('err');
+    err.classList.remove('show');
+
+    if(!biz){ showErr("Add the business name first."); return; }
+    if(!rating){ showErr("Pick a star rating."); return; }
+    if(!e1){ showErr("Fill in at least the first memorable experience — that's what makes it sound like you."); return; }
+    if(!people){ showErr("Pick how the people were."); return; }
+    if(!exper){ showErr("Pick how the experience was."); return; }
+    if(!closer){ showErr("Pick whether you'd go back — it sets your closing line."); return; }
+
+    document.getElementById('form').style.opacity=.5;
+    document.getElementById('go').disabled=true;
+    document.getElementById('out').classList.remove('show');
+    document.getElementById('load').classList.add('show');
+    let mi=0; const loadtxt=document.getElementById('loadtxt');
+    const cyc=setInterval(()=>{ mi=(mi+1)%loadMsgs.length; loadtxt.textContent=loadMsgs[mi]; },1400);
+
+    try{
+      const res=await fetch("/.netlify/functions/write-review",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          temperature:1,
+          system:buildSystem(),
+          messages:[{role:"user",content:buildUserMsg()}]
+        })
+      });
+      if(!res.ok) throw new Error("API "+res.status);
+      const data=await res.json();
+      let txt=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").trim();
+      txt=txt.replace(/^["']|["']$/g,'').trim();
+      if(!txt) throw new Error("empty");
+      lastReview=txt;
+      showReview(txt);
+    }catch(e){
+      showErr("Couldn't reach the writer just now — give it another tap in a sec.");
+    }finally{
+      clearInterval(cyc);
+      document.getElementById('load').classList.remove('show');
+      document.getElementById('form').style.opacity=1;
+      document.getElementById('go').disabled=false;
+    }
+  }
+
+  function showReview(txt){
+    document.getElementById('review').textContent=txt;
+    document.getElementById('outstars').textContent='★'.repeat(rating)+'☆'.repeat(5-rating);
+    document.getElementById('count').textContent=txt.length+" characters · fits Google";
+    const copy=document.getElementById('copy'); copy.textContent="Copy review"; copy.classList.remove('done');
+    document.getElementById('out').classList.add('show');
+    document.getElementById('out').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function showErr(m){ const e=document.getElementById('err'); e.textContent=m; e.classList.add('show'); e.scrollIntoView({behavior:'smooth',block:'center'}); }
+
+  document.getElementById('go').addEventListener('click',generate);
+  document.getElementById('copy').addEventListener('click',async()=>{
+    try{ await navigator.clipboard.writeText(lastReview); }
+    catch(e){ const t=document.createElement('textarea'); t.value=lastReview; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+    const c=document.getElementById('copy'); c.textContent="Copied ✓"; c.classList.add('done');
+  });
+  document.getElementById('again').addEventListener('click',()=>{
+    // Clear text + textarea + select fields
+    ['biz','loc','exp1','exp2','emp','people','exper','closer'].forEach(id=>{
+      document.getElementById(id).value='';
+    });
+    // Reset stars
+    rating=0; paint(0); document.getElementById('starcap').textContent='';
+    // Reset category pills + hide the Other type-in
+    document.querySelectorAll('#cats .pill').forEach(x=>x.classList.remove('on'));
+    cat='';
+    const oc=document.getElementById('othercat'); oc.value=''; oc.style.display='none';
+    // Reset length to Quick, tone to Warm (the defaults)
+    document.querySelectorAll('#lens .pill').forEach(x=>x.classList.remove('on'));
+    document.querySelector('#lens .pill[data-len="quick"]').classList.add('on'); len='quick';
+    document.querySelectorAll('#tones .pill').forEach(x=>x.classList.remove('on'));
+    document.querySelector('#tones .pill[data-tone="warm"]').classList.add('on'); tone='warm';
+    // Reset GPS pin state + location hint
+    const gps=document.getElementById('gps'); if(gps) gps.classList.remove('on');
+    document.getElementById('lochint').textContent='Pins down which one you mean when there are 1,000 of them.';
+    // Hide output, clear any error, scroll to top
+    document.getElementById('out').classList.remove('show');
+    document.getElementById('err').classList.remove('show');
+    lastReview='';
+    document.getElementById('form').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  document.getElementById('find').addEventListener('click',()=>{
+    const biz=document.getElementById('biz').value.trim();
+    const loc=document.getElementById('loc').value.trim();
+    // Strip route-style noise so Maps doesn't switch into directions mode.
+    // Drop anything that reads as A-to-B: "JFK to PHX", airport-code pairs, arrows, "->".
+    let cleanLoc = loc
+      .replace(/\b[A-Z]{3}\s*(to|-|–|—|→|>)\s*[A-Z]{3}\b/gi,'') // KFK to PHX
+      .replace(/\bto\b.*$/i,'')                                  // trailing "to ..."
+      .replace(/[→>]/g,'')
+      .trim();
+    // If what's left still looks like a bare airport code or is empty, ignore location.
+    if(/^[A-Z]{2,4}$/.test(cleanLoc)) cleanLoc='';
+    const q=encodeURIComponent([biz,cleanLoc].filter(Boolean).join(' ').trim());
+    // search/ endpoint lands on the business listing (review button lives there),
+    // and avoids the dir/ directions parser entirely.
+    window.open(`https://www.google.com/maps/search/${q}`,'_blank');
+  });
+</script>
+</body>
+</html>
