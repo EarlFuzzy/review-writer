@@ -114,6 +114,7 @@
     border-radius:30px;padding:8px 15px;cursor:pointer;transition:all .12s;
     -webkit-tap-highlight-color:transparent;
   }
+  #cats .pill{font-size:12.5px;padding:7px 13px}
   .pill.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
   .pill.tone.on{background:var(--sky);border-color:var(--sky)}
   .pill.len.on{background:var(--sun);border-color:var(--sun)}
@@ -146,13 +147,15 @@
   .out-stars{font-size:15px;color:var(--gold);letter-spacing:2px}
   .review{padding:20px 19px;font-size:16.5px;line-height:1.6;white-space:pre-wrap}
   .out-actions{display:flex;flex-wrap:wrap;gap:10px;padding:0 18px 18px}
-  .copy,.find,.again{
+  .copy,.remix,.find,.again{
     font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;font-weight:700;cursor:pointer;
-    border-radius:9px;padding:13px;flex:1 1 30%;min-width:96px;border:1px solid var(--line);transition:all .12s;
+    border-radius:9px;padding:13px;flex:1 1 40%;min-width:96px;border:1px solid var(--line);transition:all .12s;
     -webkit-tap-highlight-color:transparent;
   }
   .copy{background:var(--sage);color:#fff;border-color:var(--sage)}
   .copy.done{background:var(--sky);border-color:var(--sky)}
+  .remix{background:var(--gold);color:#3a2a05;border-color:var(--gold)}
+  .remix:disabled{opacity:.5}
   .find{background:var(--sky);color:#fff;border-color:var(--sky)}
   .again{background:var(--paper);color:var(--ink)}
   .count{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:var(--muted);text-align:right;padding:0 19px 14px;margin-top:-4px}
@@ -220,12 +223,22 @@
     <div class="field">
       <label>What kind of place? <span class="opt">— shapes what matters</span></label>
       <div class="pills" id="cats">
-        <div class="pill" data-cat="Restaurant / food">Restaurant</div>
-        <div class="pill" data-cat="Bar / nightlife">Bar / Nightlife</div>
-        <div class="pill" data-cat="Auto / mechanic">Auto</div>
-        <div class="pill" data-cat="Hotel / travel">Hotel / Travel</div>
-        <div class="pill" data-cat="Local service / shop">Service / Shop</div>
-        <div class="pill" data-cat="Experience / activity">Experience</div>
+        <div class="pill" data-cat="Restaurant / Bar">Restaurant / Bar</div>
+        <div class="pill" data-cat="Nightlife">Nightlife</div>
+        <div class="pill" data-cat="Hotel">Hotel</div>
+        <div class="pill" data-cat="Travel">Travel</div>
+        <div class="pill" data-cat="Retail">Retail</div>
+        <div class="pill" data-cat="Professional Services">Professional Services</div>
+        <div class="pill" data-cat="Skilled Trades">Skilled Trades</div>
+        <div class="pill" data-cat="Experiences">Experiences</div>
+        <div class="pill" data-cat="Entertainment">Entertainment</div>
+        <div class="pill" data-cat="Auto">Auto</div>
+        <div class="pill" data-cat="Medical">Medical</div>
+        <div class="pill" data-cat="Wellness">Wellness</div>
+        <div class="pill" data-cat="Grocery">Grocery</div>
+        <div class="pill" data-cat="Pet Services">Pet Services</div>
+        <div class="pill" data-cat="Convenience / Gas">Convenience / Gas</div>
+        <div class="pill" data-cat="Rx">Rx</div>
         <div class="pill" data-cat="Other">Other</div>
       </div>
       <input type="text" id="othercat" placeholder="What kind of business? e.g. tattoo shop, dog groomer, dispensary" autocomplete="off" style="display:none;margin-top:10px">
@@ -250,12 +263,14 @@
         <option>Knowledgeable</option>
         <option>Attentive</option>
         <option>Patient</option>
-        <option>Honest</option>
-        <option>Welcoming</option>
-        <option>Easygoing</option>
         <option>Professional</option>
-        <option>Genuine</option>
         <option>Funny</option>
+        <option>Distracted</option>
+        <option>Indifferent</option>
+        <option>Slow to help</option>
+        <option>Overwhelmed</option>
+        <option>Dismissive</option>
+        <option>Rude</option>
       </select>
     </div>
 
@@ -267,12 +282,13 @@
         <option>Fast</option>
         <option>Fair-priced</option>
         <option>Above and beyond</option>
-        <option>Hassle-free</option>
-        <option>Worth every penny</option>
-        <option>Better than expected</option>
-        <option>Top-notch</option>
         <option>Consistent</option>
-        <option>A great value</option>
+        <option>Average</option>
+        <option>Slower than expected</option>
+        <option>Overpriced</option>
+        <option>Disorganized</option>
+        <option>Frustrating</option>
+        <option>A letdown</option>
       </select>
     </div>
 
@@ -293,9 +309,13 @@
     <div class="field">
       <label>Tone</label>
       <div class="pills" id="tones">
+        <div class="pill tone" data-tone="impressed">Impressed</div>
         <div class="pill tone on" data-tone="warm">Warm</div>
         <div class="pill tone" data-tone="funny">Funny</div>
         <div class="pill tone" data-tone="matter-of-fact">Matter-of-fact</div>
+        <div class="pill tone" data-tone="neutral">Neutral</div>
+        <div class="pill tone" data-tone="disappointed">Disappointed</div>
+        <div class="pill tone" data-tone="upset">Upset</div>
       </div>
     </div>
 
@@ -331,6 +351,7 @@
       <div class="count" id="count"></div>
       <div class="out-actions">
         <button class="copy" id="copy">Copy review</button>
+        <button class="remix" id="remix">🔀 Remix</button>
         <button class="find" id="find">Find on Google</button>
         <button class="again" id="again">New one</button>
       </div>
@@ -435,9 +456,13 @@
       full:"LENGTH: Full Story — 3 to 6 paragraphs with a real narrative arc, like his Fenton Investment or Firestone reviews."
     },
     tones:{
+      impressed:"TONE: Genuinely impressed — this exceeded what he expected. More enthusiasm than his usual warm baseline, real excitement, but still grounded in the specifics, not gushing.",
       warm:"TONE: Warm and genuine — his default. Grateful, human, generous.",
       funny:"TONE: Lean into his humor and playful asides, but keep it natural — never forced or corny.",
-      "matter-of-fact":"TONE: More straightforward and grounded. Still recognizably him, just less exclamation and flourish."
+      "matter-of-fact":"TONE: More straightforward and grounded. Still recognizably him, just less exclamation and flourish.",
+      neutral:"TONE: Even-keeled and observational — neither praising nor complaining much, just laying out what happened. Low emotional charge either direction.",
+      disappointed:"TONE: Let down. He expected better and says so plainly, without exaggerating the problem or being cruel about it — the frustration is real but controlled.",
+      upset:"TONE: Genuinely frustrated or angry. Direct, unfiltered, doesn't soften the complaint — but never crosses into personal attacks or cruelty. This is his most negative gear."
     }
   };
 
@@ -465,9 +490,13 @@
         full:"LENGTH: Full Story — 3 to 6 paragraphs with a real narrative arc."
       },
       tones: obj.tones || {
+        impressed:"TONE: Genuinely impressed, more enthusiasm than the usual baseline, but grounded in specifics, not gushing.",
         warm:"TONE: Warm and genuine.",
         funny:"TONE: Playful and funny, but natural — never forced.",
-        "matter-of-fact":"TONE: Straightforward and grounded."
+        "matter-of-fact":"TONE: Straightforward and grounded.",
+        neutral:"TONE: Even-keeled and observational, low emotional charge either direction.",
+        disappointed:"TONE: Let down, says so plainly without exaggerating or being cruel.",
+        upset:"TONE: Genuinely frustrated, direct and unfiltered, but never crosses into personal attacks."
       }
     };
   }
@@ -476,6 +505,28 @@
     document.querySelector('.eyebrow').textContent = name + " · Voice Loaded";
     document.querySelector('.sub').textContent = "Writing in " + name + "'s voice. A few facts in, one review out.";
   }
+
+  // ---------- Structural variety ----------
+  // Real reviewers don't use the same shape every time. Pick a structural approach
+  // per generation so reviews vary beyond just wording. Remix forces a different one.
+  const STRUCTURES = [
+    "Lead with the punchy verdict line first, then tell the story that backs it up, then close.",
+    "Skip the verdict-opener entirely. Just start in the middle of the story — drop straight into what happened, no throat-clearing.",
+    "Open with the specific detail or moment first (the thing that actually happened), then zoom out to how you feel about the place overall.",
+    "Lead with a small complaint or hesitation, then pivot into why it still worked out / or didn't. Let the review turn partway through.",
+    "Structure it like you're explaining it to a friend who asked 'how was it' — conversational, doesn't need a big opening hook at all.",
+    "Open by addressing what you expected going in, then contrast that with what actually happened.",
+    "Keep the opener short and blunt — a few words, not a full sentence — then let the story do the work."
+  ];
+  let lastStructureIdx = -1;
+  function pickStructure(forceDifferent){
+    let idx;
+    do { idx = Math.floor(Math.random()*STRUCTURES.length); }
+    while (forceDifferent && idx === lastStructureIdx && STRUCTURES.length > 1);
+    lastStructureIdx = idx;
+    return STRUCTURES[idx];
+  }
+  let STRUCTURE_INSTR = STRUCTURES[0];
 
   function buildSystem(){
     return `You are ghostwriting a Google review in the exact voice of ${PROFILE.name}. Output ONLY the review text — no preamble, no quotation marks, no title, no sign-off, no notes. It must read as if ${PROFILE.name} typed it themselves.
@@ -492,6 +543,9 @@ SOUND LIKE A REAL PERSON, NOT AN AI. This is the most important rule. Real revie
 - Don't over-explain or wrap up too neatly. Real people trail off, jump around, and don't always tie a perfect bow.
 - Skip the corporate-review cadence entirely. No "I recently had the pleasure of," no "Overall," no summary paragraph that restates everything.
 - A tiny bit of imperfection (a dash where a comma might go, an enthusiastic run-on) reads MORE human, not less. Don't sand it down to a press release.
+
+STRUCTURE FOR THIS REVIEW: ${STRUCTURE_INSTR}
+This is important — real reviewers don't use the same shape every time. Follow this specific structural approach rather than defaulting to the reviewer's most typical pattern.
 
 RATING CALIBRATION: Match the emotional register to the star rating. 5 = genuine enthusiasm and a real recommendation. 4 = strong but name the small ding honestly. 3 = fair, balanced, an honest mixed-bag take. 2 = mostly a miss but still even-handed. 1 = what went wrong, direct but not cruel.
 
@@ -546,7 +600,7 @@ GOOGLE: keep it well under 4000 characters.`;
   const loadMsgs=["Finding the punchy opener…","Building the story…","Working in the shout-outs…","Killing every cliché…","Matching your voice…"];
   let lastReview='';
 
-  async function generate(){
+  async function generate(isRemix){
     const biz=document.getElementById('biz').value.trim();
     const e1=document.getElementById('exp1').value.trim();
     const people=document.getElementById('people').value;
@@ -562,6 +616,8 @@ GOOGLE: keep it well under 4000 characters.`;
     if(!exper){ showErr("Pick how the experience was."); return; }
     if(!closer){ showErr("Pick whether you'd go back — it sets your closing line."); return; }
 
+    STRUCTURE_INSTR = pickStructure(!!isRemix);
+
     document.getElementById('form').style.opacity=.5;
     document.getElementById('go').disabled=true;
     document.getElementById('out').classList.remove('show');
@@ -570,10 +626,10 @@ GOOGLE: keep it well under 4000 characters.`;
     const cyc=setInterval(()=>{ mi=(mi+1)%loadMsgs.length; loadtxt.textContent=loadMsgs[mi]; },1400);
 
     try{
-      const res=await fetch("/.netlify/functions/write-review",{
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-          temperature:1,
+          model:"claude-sonnet-4-6",max_tokens:1200,temperature:1,
           system:buildSystem(),
           messages:[{role:"user",content:buildUserMsg()}]
         })
@@ -605,7 +661,8 @@ GOOGLE: keep it well under 4000 characters.`;
   }
   function showErr(m){ const e=document.getElementById('err'); e.textContent=m; e.classList.add('show'); e.scrollIntoView({behavior:'smooth',block:'center'}); }
 
-  document.getElementById('go').addEventListener('click',generate);
+  document.getElementById('go').addEventListener('click',()=>generate(false));
+  document.getElementById('remix').addEventListener('click',()=>generate(true));
   document.getElementById('copy').addEventListener('click',async()=>{
     try{ await navigator.clipboard.writeText(lastReview); }
     catch(e){ const t=document.createElement('textarea'); t.value=lastReview; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
